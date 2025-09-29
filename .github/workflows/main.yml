@@ -78,4 +78,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 5. Rodar a verificação do Commitlint
-        run: pnpm exec commitlint --from ${{ github.event.before }} --to ${{ github.sha }} --verbose
+        run: pnpm exec commitlint --last
