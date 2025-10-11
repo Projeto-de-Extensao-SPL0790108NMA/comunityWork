@@ -4,7 +4,6 @@
  * Segue o princípio de "Single Source of Truth" (Fonte Única da Verdade),
  * quebrando dependências circulares e organizando o código.
  */
-
 export type Profile = {
   id: string;
   full_name: string;
@@ -31,6 +30,7 @@ export type AppStackParamList = {
     conversationId: number;
     recipient: Profile;
   };
+  Pesquisar: undefined;
 };
 
 export type TabParamList = {

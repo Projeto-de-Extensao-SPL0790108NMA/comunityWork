@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   Text,
-  SafeAreaView,
   TouchableOpacity,
   View,
   ScrollView,
@@ -9,12 +8,10 @@ import {
   Alert,
   FlatList,
   StatusBar,
+  RefreshControl,
 } from 'react-native';
-import {
-  useNavigation,
-  useFocusEffect,
-  CommonActions,
-} from '@react-navigation/native'; // 1. Importe CommonActions
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../../navigation/types';
 import { supabase } from '../../services/supabase';
@@ -27,152 +24,262 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   'MainTabs'
 >;
 
-type Category = {
+interface Category {
   id: number;
   name: string;
   icon: keyof typeof Ionicons.glyphMap;
-};
+  color: string;
+}
 
 /**
- * @description
- * Tela inicial do aplicativo para usuários logados.
- * Apresenta uma saudação personalizada, atalhos para categorias e uma lista dos serviços mais bem avaliados.
+ * Tela inicial do aplicativo LINKA
+ * Conecta prestadores de serviços locais com clientes da comunidade
  */
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const [loading, setLoading] = useState(true);
-  const [fullName, setFullName] = useState('');
-  const [topServices, setTopServices] = useState<ServiceCardData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [topRatedServices, setTopRatedServices] = useState<ServiceCardData[]>(
+    [],
+  );
+  const [recentServices, setRecentServices] = useState<ServiceCardData[]>([]);
 
-  const featuredCategories: Category[] = [
-    { id: 1, name: 'Reparos', icon: 'build-outline' },
-    { id: 2, name: 'Aulas', icon: 'school-outline' },
-    { id: 3, name: 'Cuidados', icon: 'sparkles-outline' },
-    { id: 4, name: 'Jardinagem', icon: 'leaf-outline' },
-    { id: 7, name: 'Tecnologia', icon: 'hardware-chip-outline' },
+  const categories: Category[] = [
+    { id: 1, name: 'Reparos', icon: 'hammer-outline', color: '#3B82F6' },
+    { id: 2, name: 'Aulas', icon: 'school-outline', color: '#8B5CF6' },
+    { id: 3, name: 'Cuidados', icon: 'heart-outline', color: '#EC4899' },
+    { id: 4, name: 'Jardinagem', icon: 'leaf-outline', color: '#10B981' },
+    { id: 5, name: 'Tecnologia', icon: 'laptop-outline', color: '#F59E0B' },
+    { id: 6, name: 'Transporte', icon: 'car-outline', color: '#6366F1' },
   ];
 
+  /**
+   * Carrega dados do usuário e serviços
+   */
+  const loadData = async (showLoader = true) => {
+    try {
+      if (showLoader) setIsLoading(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const [profileData, topServicesData, recentServicesData] =
+        await Promise.all([
+          supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single(),
+          supabase.rpc('get_top_rated_services', { limit_count: 4 }),
+          supabase
+            .from('services')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(4),
+        ]);
+
+      if (profileData.error) throw profileData.error;
+      const firstName = profileData.data?.full_name?.split(' ')[0] || 'Usuário';
+      setUserName(firstName);
+      setTopRatedServices(topServicesData.data || []);
+      setRecentServices(recentServicesData.data || []);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao carregar informações';
+      Alert.alert('Erro', errorMessage);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  /**
+   * Atualiza dados ao focar na tela
+   */
   useFocusEffect(
     useCallback(() => {
-      const fetchData = async () => {
-        try {
-          setLoading(true);
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          if (!user) throw new Error('Usuário não encontrado');
-
-          const [profileResponse, servicesResponse] = await Promise.all([
-            supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('id', user.id)
-              .single(),
-            supabase.rpc('get_top_rated_services', { limit_count: 4 }),
-          ]);
-
-          if (profileResponse.error) throw profileResponse.error;
-          if (servicesResponse.error) throw servicesResponse.error;
-
-          setFullName(profileResponse.data?.full_name || '');
-          setTopServices(servicesResponse.data || []);
-        } catch (error) {
-          let errorMessage =
-            'Não foi possível buscar as informações. Tente novamente.';
-          if (error instanceof Error) {
-            errorMessage = error.message;
-          }
-          Alert.alert('Erro ao carregar dados', errorMessage);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
+      loadData();
     }, []),
   );
 
   /**
-   * @description Navega para a aba de Pesquisa.
-   * Utiliza CommonActions.navigate para uma navegação segura entre diferentes navegadores (Stack -> Tab).
+   * Função de refresh pull-to-refresh
    */
-  const navigateToSearch = () => {
-    navigation.dispatch(
-      CommonActions.navigate({
-        name: 'Pesquisar',
-      }),
-    );
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    loadData(false);
   };
 
-  const renderCategoryItem = ({ item }: { item: Category }) => (
-    <TouchableOpacity style={styles.categoryItem} onPress={navigateToSearch}>
-      <View style={styles.categoryIconContainer}>
-        <Ionicons name={item.icon} size={28} color="#3F83F8" />
+  /**
+   * Navega para tela de pesquisa
+   */
+  const navigateToSearch = () => {
+    navigation.navigate('Pesquisar' as never);
+  };
+
+  /**
+   * Navega para adicionar novo serviço
+   */
+  const handleAddService = () => {
+    navigation.navigate('AddService');
+  };
+
+  /**
+   * Renderiza item de categoria
+   */
+  const renderCategory = ({ item }: { item: Category }) => (
+    <TouchableOpacity
+      style={styles.categoryCard}
+      onPress={navigateToSearch}
+      activeOpacity={0.7}
+    >
+      <View
+        style={[
+          styles.categoryIconWrapper,
+          { backgroundColor: `${item.color}15` },
+        ]}
+      >
+        <Ionicons name={item.icon} size={24} color={item.color} />
       </View>
-      <Text style={styles.categoryText}>{item.name}</Text>
+      <Text style={styles.categoryLabel} numberOfLines={1}>
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
 
-  if (loading) {
+  /**
+   * Renderiza card de serviço
+   */
+  const renderServiceCard = ({ item }: { item: ServiceCardData }) => (
+    <View style={styles.serviceCardWrapper}>
+      <ServiceCard service={item} />
+    </View>
+  );
+
+  /**
+   * Renderiza seção vazia
+   */
+  const renderEmptySection = (message: string) => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="cube-outline" size={48} color="#CBD5E1" />
+      <Text style={styles.emptyText}>{message}</Text>
+    </View>
+  );
+
+  if (isLoading) {
     return (
-      <ActivityIndicator
-        style={{ flex: 1, justifyContent: 'center' }}
-        size="large"
-        color="#3F83F8"
-      />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={styles.loadingText}>Carregando...</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.welcomeText}>
-            Olá, {fullName.split(' ')[0] || 'Usuário'}
-          </Text>
-          <Text style={styles.subHeaderText}>
-            Encontre o serviço perfeito para você.
-          </Text>
-        </View>
-
-        {/* Seção de Categorias */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Categorias</Text>
-        </View>
-        <FlatList
-          data={featuredCategories}
-          renderItem={renderCategoryItem}
-          keyExtractor={item => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryListContainer}
-        />
-
-        {/* Seção de Serviços em Destaque */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Serviços em Destaque</Text>
-          {/* 2. CORREÇÃO: O botão "Ver todos" agora usa a navegação segura */}
-          <TouchableOpacity onPress={navigateToSearch}>
-            <Text style={styles.seeAllButtonText}>Ver todos</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.greeting}>Olá, {userName}</Text>
+            <Text style={styles.subtitle}>
+              Encontre serviços na sua comunidade
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddService}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Text style={styles.addButtonText}>Adicionar</Text>
           </TouchableOpacity>
         </View>
-        <FlatList
-          data={topServices}
-          renderItem={({ item }) => <ServiceCard service={item} />}
-          keyExtractor={item => item.id.toString()}
-          numColumns={2}
-          columnWrapperStyle={{ gap: 16 }}
-          contentContainerStyle={styles.servicesGridContainer}
-          scrollEnabled={false}
-        />
-      </ScrollView>
+      </View>
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => navigation.navigate('AddService')}
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={['#3B82F6']}
+            tintColor="#3B82F6"
+          />
+        }
       >
-        <Ionicons name="add" size={32} color="#FFFFFF" />
-      </TouchableOpacity>
+        {/* Categorias */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Categorias</Text>
+            <TouchableOpacity onPress={navigateToSearch}>
+              <Text style={styles.viewAllText}>Ver todas</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={categories}
+            renderItem={renderCategory}
+            keyExtractor={item => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContainer}
+          />
+        </View>
+
+        {/* Serviços em Destaque */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="star" size={20} color="#F59E0B" />
+              <Text style={styles.sectionTitle}>Mais Bem Avaliados</Text>
+            </View>
+            <TouchableOpacity onPress={navigateToSearch}>
+              <Text style={styles.viewAllText}>Ver todos</Text>
+            </TouchableOpacity>
+          </View>
+          {topRatedServices.length > 0 ? (
+            <FlatList
+              data={topRatedServices}
+              renderItem={renderServiceCard}
+              keyExtractor={item => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.servicesContainer}
+            />
+          ) : (
+            renderEmptySection('Nenhum serviço avaliado ainda')
+          )}
+        </View>
+
+        {/* Serviços Recentes */}
+        <View style={[styles.section, styles.lastSection]}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="time-outline" size={20} color="#6366F1" />
+              <Text style={styles.sectionTitle}>Adicionados Recentemente</Text>
+            </View>
+            <TouchableOpacity onPress={navigateToSearch}>
+              <Text style={styles.viewAllText}>Ver todos</Text>
+            </TouchableOpacity>
+          </View>
+          {recentServices.length > 0 ? (
+            <FlatList
+              data={recentServices}
+              renderItem={renderServiceCard}
+              keyExtractor={item => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.servicesContainer}
+            />
+          ) : (
+            renderEmptySection('Nenhum serviço recente')
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

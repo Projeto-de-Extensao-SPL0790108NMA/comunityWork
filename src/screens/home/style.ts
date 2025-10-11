@@ -1,89 +1,195 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform, Dimensions } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.42;
+const HORIZONTAL_PADDING = 20;
 
 export const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F9F9F9', // Um fundo mais suave
-  },
   container: {
     flex: 1,
-  },
-  // Cabeçalho
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
     backgroundColor: '#FFFFFF',
   },
-  welcomeText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1A202C',
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
-  subHeaderText: {
-    fontSize: 16,
-    color: '#718096',
+
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+
+  // Header Styles
+  header: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingTop: 16,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  headerTextContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
+
+  greeting: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#0F172A',
+    letterSpacing: -0.5,
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: '#64748B',
     marginTop: 4,
+    fontWeight: '400',
   },
+
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    gap: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#3B82F6',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // ScrollView
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+
+  // Section Styles
+  section: {
+    marginTop: 24,
+  },
+
+  lastSection: {
+    marginBottom: 24,
+  },
+
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 24,
+    paddingHorizontal: HORIZONTAL_PADDING,
     marginBottom: 16,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1A202C',
+
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  seeAllButtonText: {
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0F172A',
+    letterSpacing: -0.3,
+  },
+
+  viewAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3F83F8',
+    color: '#3B82F6',
   },
-  categoryListContainer: {
-    paddingHorizontal: 20,
+
+  // Categories
+  categoriesContainer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    gap: 12,
   },
-  categoryItem: {
+
+  categoryCard: {
     alignItems: 'center',
-    marginRight: 16,
-    width: 80,
+    marginRight: 12,
+    width: 72,
   },
-  categoryIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFFFFF',
+
+  categoryIconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
     marginBottom: 8,
   },
-  categoryText: {
+
+  categoryLabel: {
     fontSize: 12,
-    color: '#4A5568',
+    color: '#475569',
+    fontWeight: '500',
     textAlign: 'center',
   },
-  servicesGridContainer: {
-    paddingHorizontal: 20,
+
+  // Services
+  servicesContainer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    gap: 12,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#3F83F8',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
+
+  serviceCardWrapper: {
+    width: CARD_WIDTH,
+    marginRight: 12,
+  },
+
+  // Empty State
+  emptyContainer: {
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    justifyContent: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
+
+  emptyText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
   },
 });
