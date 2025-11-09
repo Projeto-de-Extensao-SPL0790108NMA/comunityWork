@@ -94,10 +94,12 @@ const FilterModal: React.FC<{
         .from('categories')
         .select('id, name')
         .order('name', { ascending: true })
-        .then(({ data }) => {
-          setAvailableCategories(data || []);
-        })
-        .finally(() => setLoading(false));
+        .then(({ data, error }) => {
+          if (!error) {
+            setAvailableCategories(data || []);
+          }
+          setLoading(false);
+        });
     }
     setTempSelected(initialSelectedCategories);
   }, [visible, initialSelectedCategories, availableCategories.length]);

@@ -4,24 +4,29 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  ActivityIndicator,
   Alert,
   FlatList,
   StatusBar,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+  useNavigation,
+  useFocusEffect,
+  CompositeNavigationProp,
+} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AppStackParamList } from '../../navigation/types';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { AppStackParamList, TabParamList } from '../../navigation/types';
 import { supabase } from '../../services/supabase';
 import { styles } from './style';
 import { Ionicons } from '@expo/vector-icons';
 import ServiceCard, { ServiceCardData } from '../../components/ServiceCard';
+import LoadingScreen from '../../components/LoadingScreen';
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  AppStackParamList,
-  'MainTabs'
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'Início'>,
+  NativeStackNavigationProp<AppStackParamList>
 >;
 
 interface Category {
@@ -115,8 +120,8 @@ const HomeScreen: React.FC = () => {
   /**
    * Navega para tela de pesquisa
    */
-  const navigateToSearch = () => {
-    navigation.navigate('Pesquisar' as never);
+  const navigateToSearch = (categoryId?: number) => {
+    navigation.navigate('Pesquisar', categoryId ? { categoryId } : undefined);
   };
 
   /**
@@ -132,7 +137,7 @@ const HomeScreen: React.FC = () => {
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
       style={styles.categoryCard}
-      onPress={navigateToSearch}
+      onPress={() => navigateToSearch(item.id)}
       activeOpacity={0.7}
     >
       <View
@@ -169,12 +174,7 @@ const HomeScreen: React.FC = () => {
   );
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={styles.loadingText}>Carregando...</Text>
-      </View>
-    );
+    return <LoadingScreen message="Carregando serviços..." />;
   }
 
   return (
@@ -184,7 +184,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTextContainer}>
-            <Text style={styles.greeting}>Olá, {userName}</Text>
+            <Text style={styles.greeting}>Olá, {userName} 👋</Text>
             <Text style={styles.subtitle}>
               Encontre serviços na sua comunidade
             </Text>
@@ -216,7 +216,7 @@ const HomeScreen: React.FC = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Categorias</Text>
-            <TouchableOpacity onPress={navigateToSearch}>
+            <TouchableOpacity onPress={() => navigateToSearch()}>
               <Text style={styles.viewAllText}>Ver todas</Text>
             </TouchableOpacity>
           </View>
@@ -237,7 +237,7 @@ const HomeScreen: React.FC = () => {
               <Ionicons name="star" size={20} color="#F59E0B" />
               <Text style={styles.sectionTitle}>Mais Bem Avaliados</Text>
             </View>
-            <TouchableOpacity onPress={navigateToSearch}>
+            <TouchableOpacity onPress={() => navigateToSearch()}>
               <Text style={styles.viewAllText}>Ver todos</Text>
             </TouchableOpacity>
           </View>
@@ -262,7 +262,7 @@ const HomeScreen: React.FC = () => {
               <Ionicons name="time-outline" size={20} color="#6366F1" />
               <Text style={styles.sectionTitle}>Adicionados Recentemente</Text>
             </View>
-            <TouchableOpacity onPress={navigateToSearch}>
+            <TouchableOpacity onPress={() => navigateToSearch()}>
               <Text style={styles.viewAllText}>Ver todos</Text>
             </TouchableOpacity>
           </View>

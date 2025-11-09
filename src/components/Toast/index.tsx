@@ -63,7 +63,7 @@ const Toast: React.FC<ToastProps> = ({
     }
   }, [visible, duration, onHide]);
 
-  if (!visible && opacity._value === 0) return null;
+  if (!visible) return null;
 
   const getToastStyle = (): ViewStyle => {
     switch (type) {
