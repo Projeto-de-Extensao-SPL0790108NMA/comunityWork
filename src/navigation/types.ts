@@ -1,15 +1,16 @@
 /**
  * @description
  * Arquivo central para a definição de tipos de navegação.
- * Segue o princípio de "Single Source of Truth" (Fonte Única da Verdade),
- * quebrando dependências circulares e organizando o código.
+ * Usa CompositeNavigationProp para permitir navegação entre diferentes stacks.
  */
+
 export type Profile = {
   id: string;
   full_name: string;
   avatar_url: string | null;
 };
 
+// Stack de Autenticação (não autenticado)
 export type AuthStackParamList = {
   Welcome: undefined;
   Login: undefined;
@@ -19,6 +20,15 @@ export type AuthStackParamList = {
   ResetPassword: undefined;
 };
 
+// Tabs principais (dentro do App)
+export type TabParamList = {
+  Início: undefined;
+  Pesquisar: { categoryId?: number } | undefined;
+  Mensagens: undefined;
+  Perfil: undefined;
+};
+
+// Stack principal do App (contém as Tabs + telas modais)
 export type AppStackParamList = {
   MainTabs: undefined;
   CompleteProfile: undefined;
@@ -30,12 +40,4 @@ export type AppStackParamList = {
     conversationId: number;
     recipient: Profile;
   };
-  Pesquisar: undefined;
-};
-
-export type TabParamList = {
-  Início: undefined;
-  Pesquisar: undefined;
-  Mensagens: undefined;
-  Perfil: undefined;
 };
