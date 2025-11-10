@@ -2,20 +2,26 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
-  Alert,
   ScrollView,
   Image,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { supabase } from '../../services/supabase';
 import { styles } from './style';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { decode } from 'base64-arraybuffer';
+import Toast from '../../components/Toast';
+import { useToast } from '../../hooks/useToast';
+import type { AppStackParamList } from '../../navigation/types';
 
 type Category = {
   id: number;
@@ -27,58 +33,96 @@ type SelectedImage = {
   base64: string;
 };
 
+type AddServiceNavigationProp = NativeStackNavigationProp<
+  AppStackParamList,
+  'AddService'
+>;
+
 /**
- * Tela para adicionar um novo serviço.
- * Permite ao usuário preencher informações do serviço, selecionar uma categoria,
- * e fazer upload de até 4 imagens.
+ * Tela para adicionar um novo serviço
  */
-const AddServiceScreen = () => {
-  // --- Estados ---
+const AddServiceScreen: React.FC = () => {
+  const navigation = useNavigation<AddServiceNavigationProp>();
+  const { showToast, toastProps } = useToast();
+
+  // Form states
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [availability, setAvailability] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
 
-  useEffect(() => {
-    /** Busca as categorias de serviço da base de dados ao montar o componente. */
-    const fetchCategories = async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name')
-        .order('name', { ascending: true });
+  // UI states
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-      if (error) {
-        Alert.alert('Erro', 'Não foi possível carregar as categorias.');
-      } else if (data) {
-        setCategories(data);
-        if (data.length > 0 && selectedCategory === null) {
-          setSelectedCategory(data[0].id); // Pré-seleciona a primeira categoria
-        }
-      }
-    };
-    fetchCategories();
+  // Validation errors
+  const [titleError, setTitleError] = useState('');
+  const [priceError, setPriceError] = useState('');
+
+  useEffect(() => {
+    loadCategories();
   }, []);
 
-  /**
-   * Abre a galeria de imagens para o usuário selecionar fotos.
-   * Limita a seleção a 4 imagens no total.
-   */
+  const loadCategories = async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id, name')
+      .order('name', { ascending: true });
+
+    if (error) {
+      showToast('Erro ao carregar categorias', 'error');
+    } else if (data && data.length > 0) {
+      setCategories(data);
+      setSelectedCategory(data[0].id);
+    }
+  };
+
+  const validateForm = (): boolean => {
+    let isValid = true;
+
+    // Validate title
+    if (!title.trim()) {
+      setTitleError('O título é obrigatório');
+      isValid = false;
+    } else if (title.trim().length < 5) {
+      setTitleError('O título deve ter pelo menos 5 caracteres');
+      isValid = false;
+    } else if (title.trim().length > 100) {
+      setTitleError('O título deve ter no máximo 100 caracteres');
+      isValid = false;
+    } else {
+      setTitleError('');
+    }
+
+    // Validate price
+    if (price && isNaN(parseFloat(price))) {
+      setPriceError('Preço inválido');
+      isValid = false;
+    } else if (price && parseFloat(price) < 0) {
+      setPriceError('Preço não pode ser negativo');
+      isValid = false;
+    } else if (price && parseFloat(price) > 1000000) {
+      setPriceError('Preço muito alto');
+      isValid = false;
+    } else {
+      setPriceError('');
+    }
+
+    return isValid;
+  };
+
   const pickImage = async () => {
     if (selectedImages.length >= 4) {
-      Alert.alert('Limite atingido', 'Você só pode adicionar até 4 fotos.');
+      showToast('Você só pode adicionar até 4 fotos', 'warning');
       return;
     }
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        'Permissão necessária',
-        'Precisamos de acesso à sua galeria para adicionar fotos.',
-      );
+      showToast('Precisamos de acesso à sua galeria', 'error');
       return;
     }
 
@@ -92,44 +136,38 @@ const AddServiceScreen = () => {
 
     if (!result.canceled && result.assets && result.assets[0].base64) {
       const asset = result.assets[0];
-      setSelectedImages(prevImages => [
-        ...prevImages,
+      setSelectedImages([
+        ...selectedImages,
         { uri: asset.uri, base64: asset.base64! },
       ]);
+      showToast('Imagem adicionada', 'success');
     }
   };
 
-  /**
-   * Remove uma imagem da lista de imagens selecionadas.
-   * @param uriToRemove A URI da imagem a ser removida.
-   */
-  const handleRemoveImage = (uriToRemove: string) => {
-    setSelectedImages(prevImages =>
-      prevImages.filter(image => image.uri !== uriToRemove),
-    );
+  const removeImage = (uriToRemove: string) => {
+    setSelectedImages(selectedImages.filter(img => img.uri !== uriToRemove));
+    showToast('Imagem removida', 'info');
   };
 
-  /**
-   * Valida os dados, faz upload das imagens e salva o novo serviço no Supabase.
-   */
   const handleSaveService = async () => {
-    if (!title.trim() || !selectedCategory) {
-      Alert.alert(
-        'Campos obrigatórios',
-        'O Título e a Categoria precisam ser preenchidos.',
-      );
+    if (!validateForm()) {
+      showToast('Por favor, corrija os erros no formulário', 'error');
       return;
     }
+
+    if (!selectedCategory) {
+      showToast('Selecione uma categoria', 'error');
+      return;
+    }
+
     setLoading(true);
+    setUploadProgress(0);
 
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user)
-        throw new Error(
-          'Usuário não autenticado. Por favor, faça login novamente.',
-        );
+      if (!user) throw new Error('Usuário não autenticado');
 
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -138,20 +176,21 @@ const AddServiceScreen = () => {
         .single();
 
       if (profileError) throw profileError;
+
       if (!profileData?.location) {
-        Alert.alert(
-          'Localização não definida',
-          'Por favor, defina sua localização no seu perfil antes de cadastrar um serviço.',
-        );
+        showToast('Defina sua localização no perfil', 'error');
         setLoading(false);
         return;
       }
 
+      // Upload images
       const uploadedPhotoUrls: string[] = [];
+      const totalImages = selectedImages.length;
 
-      for (const image of selectedImages) {
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
         const fileExt = image.uri.split('.').pop() || 'png';
-        const fileName = `${Date.now()}.${fileExt}`;
+        const fileName = `${Date.now()}_${i}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
@@ -165,16 +204,19 @@ const AddServiceScreen = () => {
         const { data: publicUrlData } = supabase.storage
           .from('service_images')
           .getPublicUrl(filePath);
+
         uploadedPhotoUrls.push(publicUrlData.publicUrl);
+        setUploadProgress(((i + 1) / totalImages) * 100);
       }
 
+      // Save service
       const serviceData = {
         user_id: user.id,
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim() || null,
         category_id: selectedCategory,
         price: price ? parseFloat(price) : null,
-        availability,
+        availability: availability.trim() || null,
         photo_urls: uploadedPhotoUrls,
         location: profileData.location,
       };
@@ -182,126 +224,201 @@ const AddServiceScreen = () => {
       const { error: insertError } = await supabase
         .from('services')
         .insert(serviceData);
+
       if (insertError) throw insertError;
 
-      Alert.alert('Sucesso!', 'Seu serviço foi cadastrado com sucesso!');
+      showToast('Serviço cadastrado com sucesso!', 'success');
 
+      // Reset form
       setTitle('');
       setDescription('');
       setPrice('');
       setAvailability('');
-      setSelectedCategory(categories.length > 0 ? categories[0].id : null);
       setSelectedImages([]);
+      setTitleError('');
+      setPriceError('');
+      setUploadProgress(0);
+
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Ocorreu um erro desconhecido.';
-      Alert.alert('Erro ao cadastrar serviço', errorMessage);
+        error instanceof Error ? error.message : 'Ocorreu um erro desconhecido';
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={styles.label}>Título do Serviço*</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: Conserto de vazamentos"
-          value={title}
-          onChangeText={setTitle}
-        />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <Toast {...toastProps} />
 
-        <Text style={styles.label}>Descrição</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Descreva o que você oferece, seus diferenciais, etc."
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-
-        <Text style={styles.label}>Categoria*</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedCategory}
-            onValueChange={itemValue =>
-              setSelectedCategory(itemValue as number)
-            }
-          >
-            {categories.map(category => (
-              <Picker.Item
-                key={category.id}
-                label={category.name}
-                value={category.id}
-              />
-            ))}
-          </Picker>
-        </View>
-
-        <Text style={styles.label}>Preço (R$)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: 50.00 (ou deixe em branco)"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Disponibilidade</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: Seg a Sex, 9h às 18h"
-          value={availability}
-          onChangeText={setAvailability}
-        />
-
-        <View style={styles.imageUploadContainer}>
-          <Text style={styles.label}>Fotos do Serviço (até 4)</Text>
-          <View style={styles.imagePreviewContainer}>
-            {selectedImages.map(image => (
-              <View key={image.uri} style={styles.imageWrapper}>
-                <Image
-                  source={{ uri: image.uri }}
-                  style={styles.imagePreview}
-                />
-                <TouchableOpacity
-                  onPress={() => handleRemoveImage(image.uri)}
-                  style={styles.imageRemoveButton}
-                >
-                  <Text style={styles.imageRemoveButtonText}>×</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-            {selectedImages.length < 4 && (
-              <TouchableOpacity
-                onPress={pickImage}
-                style={styles.addPhotoButton}
-              >
-                <Ionicons name="add-circle-outline" size={40} color="#666" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleSaveService}
-          disabled={loading}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
         >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Salvar Serviço</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Basic Information */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Informações Básicas</Text>
+
+              <Text style={styles.label}>
+                Título do Serviço <Text style={styles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={[styles.input, titleError ? styles.inputError : null]}
+                placeholder="Ex: Conserto de vazamentos"
+                value={title}
+                onChangeText={text => {
+                  setTitle(text);
+                  setTitleError('');
+                }}
+                maxLength={100}
+              />
+              {titleError ? (
+                <Text style={styles.errorText}>{titleError}</Text>
+              ) : null}
+              <Text style={styles.helperText}>
+                {title.length}/100 caracteres
+              </Text>
+
+              <Text style={styles.label}>
+                Categoria <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedCategory}
+                  onValueChange={itemValue =>
+                    setSelectedCategory(itemValue as number)
+                  }
+                >
+                  {categories.map(cat => (
+                    <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
+                  ))}
+                </Picker>
+              </View>
+
+              <Text style={styles.label}>Descrição</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Descreva o que você oferece..."
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                maxLength={500}
+              />
+              <Text style={styles.helperText}>
+                {description.length}/500 caracteres
+              </Text>
+            </View>
+
+            {/* Service Details */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Detalhes do Serviço</Text>
+
+              <Text style={styles.label}>Preço (R$)</Text>
+              <TextInput
+                style={[styles.input, priceError ? styles.inputError : null]}
+                placeholder="Ex: 50.00 (ou deixe em branco)"
+                value={price}
+                onChangeText={text => {
+                  setPrice(text);
+                  setPriceError('');
+                }}
+                keyboardType="numeric"
+              />
+              {priceError ? (
+                <Text style={styles.errorText}>{priceError}</Text>
+              ) : null}
+
+              <Text style={styles.label}>Disponibilidade</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Seg a Sex, 9h às 18h"
+                value={availability}
+                onChangeText={setAvailability}
+              />
+            </View>
+
+            {/* Images */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Fotos do Serviço (até 4)</Text>
+
+              <View style={styles.imagePreviewContainer}>
+                {selectedImages.map(image => (
+                  <View key={image.uri} style={styles.imageWrapper}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={styles.imagePreview}
+                    />
+                    <TouchableOpacity
+                      onPress={() => removeImage(image.uri)}
+                      style={styles.imageRemoveButton}
+                    >
+                      <Ionicons name="close" size={16} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+
+                {selectedImages.length < 4 && (
+                  <TouchableOpacity
+                    onPress={pickImage}
+                    style={styles.addPhotoButton}
+                  >
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={40}
+                      color="#3B82F6"
+                    />
+                    <Text style={styles.addPhotoText}>Adicionar foto</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Progress Bar */}
+            {loading && uploadProgress > 0 && (
+              <View style={styles.progressContainer}>
+                <Text style={styles.progressText}>Enviando imagens...</Text>
+                <View style={styles.progressBar}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${uploadProgress}%` },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.progressPercentage}>
+                  {Math.round(uploadProgress)}%
+                </Text>
+              </View>
+            )}
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSaveService}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                  <Text style={styles.buttonText}>Salvar Serviço</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
