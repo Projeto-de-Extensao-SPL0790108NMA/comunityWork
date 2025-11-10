@@ -8,77 +8,117 @@ export const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: 24,
   },
+
+  // Header
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#EFF6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2D3748',
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#718096',
+    fontSize: 16,
+    color: '#64748B',
     textAlign: 'center',
   },
+
+  // Form
   formContainer: {
     width: '100%',
+    marginBottom: 24,
+  },
+  inputWrapper: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F7FAFC',
-    borderWidth: 1,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 2,
     borderColor: '#E2E8F0',
-    borderRadius: 8,
-    marginBottom: 15,
-    paddingHorizontal: 15,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 56,
+    gap: 12,
+  },
+  inputContainerError: {
+    borderColor: '#EF4444',
+    backgroundColor: '#FEF2F2',
   },
   input: {
     flex: 1,
-    height: 50,
     fontSize: 16,
-    color: '#2D3748',
+    color: '#0F172A',
   },
-  icon: {
-    marginLeft: 10,
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+    marginTop: 6,
+    fontWeight: '500',
   },
+
+  // Footer
   footerContainer: {
     width: '100%',
     alignItems: 'center',
-    marginTop: 20,
   },
   registerButton: {
+    flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#3F83F8',
+    backgroundColor: '#3B82F6',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  registerButtonDisabled: {
+    backgroundColor: '#94A3B8',
+    shadowOpacity: 0,
   },
   registerButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
   },
-  loginButton: {
-    marginTop: 20,
+  loginContainer: {
+    flexDirection: 'row',
+    marginTop: 24,
+    alignItems: 'center',
   },
   loginText: {
-    fontSize: 16,
-    color: '#718096',
+    fontSize: 15,
+    color: '#64748B',
   },
   loginLink: {
-    color: '#3F83F8',
-    fontWeight: 'bold',
-  },
-  errorText: {
-    color: '#E53E3E',
-    textAlign: 'center',
-    marginBottom: 10,
-    fontSize: 14,
+    color: '#3B82F6',
+    fontWeight: '700',
+    fontSize: 15,
   },
 });
