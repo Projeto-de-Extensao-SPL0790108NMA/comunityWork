@@ -4,12 +4,12 @@ import {
   Text,
   TouchableOpacity,
   Alert,
-  SafeAreaView,
   ActivityIndicator,
   Image,
   ScrollView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { supabase } from '../../services/supabase';

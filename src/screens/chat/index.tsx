@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   View,
   Text,
@@ -8,7 +14,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +23,9 @@ import type { AppStackParamList } from '../../navigation/types';
 import { styles } from './style';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import Toast from '../../components/Toast';
+import { useToast } from '../../hooks/useToast';
+import LoadingScreen from '../../components/LoadingScreen';
 
 type Message = {
   id: number;
@@ -30,16 +38,16 @@ type ListItem =
   | { type: 'message'; data: Message }
   | { type: 'date'; date: string };
 
+type ChatRouteProp = RouteProp<AppStackParamList, 'Chat'>;
+
 /**
- * Hook customizado para gerenciar o estado das mensagens de um chat.
- * Busca as mensagens iniciais e se inscreve para atualizações em tempo real.
- * @param conversationId O ID da conversa para buscar mensagens.
- * @returns Um objeto contendo as mensagens, o estado de carregamento e o ID do usuário atual.
+ * Hook para gerenciar mensagens do chat
  */
 const useChatMessages = (conversationId: number) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -55,19 +63,22 @@ const useChatMessages = (conversationId: number) => {
     if (!conversationId || !userId) return;
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        Alert.alert('Erro', 'Não foi possível carregar as mensagens.');
-      } else if (data) {
-        setMessages(data);
+        if (error) throw error;
+        setMessages(data || []);
+      } catch {
+        showToast('Erro ao carregar mensagens', 'error');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     fetchMessages();
 
     const channel = supabase
@@ -91,17 +102,23 @@ const useChatMessages = (conversationId: number) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, userId]);
+  }, [conversationId, userId, showToast]);
 
   return { messages, setMessages, loading, userId };
 };
 
+/**
+ * Separador de data
+ */
 const DateSeparator = ({ date }: { date: string }) => (
   <View style={styles.dateSeparator}>
     <Text style={styles.dateSeparatorText}>{date}</Text>
   </View>
 );
 
+/**
+ * Bolha de mensagem
+ */
 const MessageBubble = ({
   message,
   isMyMessage,
@@ -138,14 +155,33 @@ const MessageBubble = ({
   </View>
 );
 
-const ChatScreen = () => {
-  const route = useRoute<RouteProp<AppStackParamList, 'Chat'>>();
-  const { conversationId } = route.params;
-  const insets = useSafeAreaInsets();
+/**
+ * Estado vazio (sem mensagens)
+ */
+const EmptyState = ({ recipientName }: { recipientName: string }) => (
+  <View style={styles.emptyContainer}>
+    <Ionicons name="chatbubbles-outline" size={64} color="#CBD5E1" />
+    <Text style={styles.emptyTitle}>Inicie a conversa</Text>
+    <Text style={styles.emptySubtitle}>
+      Envie uma mensagem para {recipientName} para começar
+    </Text>
+  </View>
+);
 
+/**
+ * Tela de chat com mensagens em tempo real
+ */
+const ChatScreen: React.FC = () => {
+  const route = useRoute<ChatRouteProp>();
+  const { conversationId, recipient } = route.params;
+  const insets = useSafeAreaInsets();
+  const { showToast, toastProps } = useToast();
   const { messages, setMessages, loading, userId } =
     useChatMessages(conversationId);
+
   const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   const processedMessages = useMemo(() => {
     const items: ListItem[] = [];
@@ -162,22 +198,23 @@ const ChatScreen = () => {
         } else {
           dateString = format(messageDate, "dd 'de' MMMM", { locale: ptBR });
         }
-
         items.push({ type: 'date', date: dateString });
         lastDate = messageDate;
       }
       items.push({ type: 'message', data: message });
     });
+
     return items;
   }, [messages]);
 
   const handleSendMessage = async () => {
     const content = newMessage.trim();
-    if (!content || !userId) return;
+    if (!content || !userId || sending) return;
 
+    setSending(true);
     const optimisticMessage: Message = {
-      id: Math.random(),
-      content: content,
+      id: Date.now(),
+      content,
       sender_id: userId,
       created_at: new Date().toISOString(),
     };
@@ -185,14 +222,20 @@ const ChatScreen = () => {
     setMessages(prev => [optimisticMessage, ...prev]);
     setNewMessage('');
 
-    const { error } = await supabase
-      .from('messages')
-      .insert({ conversation_id: conversationId, sender_id: userId, content });
+    try {
+      const { error } = await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        sender_id: userId,
+        content,
+      });
 
-    if (error) {
-      Alert.alert('Erro', 'Não foi possível enviar a mensagem.');
+      if (error) throw error;
+    } catch {
+      showToast('Erro ao enviar mensagem', 'error');
       setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
       setNewMessage(content);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -211,26 +254,41 @@ const ChatScreen = () => {
     [userId],
   );
 
-  if (loading)
-    return <ActivityIndicator style={{ flex: 1, justifyContent: 'center' }} />;
+  if (loading) {
+    return <LoadingScreen message="Carregando conversa..." />;
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Toast {...toastProps} />
+
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={90}
       >
         <FlatList
+          ref={flatListRef}
           data={processedMessages}
           keyExtractor={(item, index) =>
             item.type === 'message' ? item.data.id.toString() : `date-${index}`
           }
           inverted
           style={styles.messageList}
-          contentContainerStyle={{ paddingTop: 10 }}
+          contentContainerStyle={
+            messages.length === 0
+              ? { flexGrow: 1, justifyContent: 'center' }
+              : { paddingTop: 10 }
+          }
           renderItem={renderItem}
+          ListEmptyComponent={
+            <EmptyState recipientName={recipient.full_name} />
+          }
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToOffset({ offset: 0, animated: true })
+          }
         />
+
         <View
           style={[
             styles.inputContainer,
@@ -242,13 +300,23 @@ const ChatScreen = () => {
             value={newMessage}
             onChangeText={setNewMessage}
             placeholder="Digite sua mensagem..."
+            placeholderTextColor="#94A3B8"
             multiline
+            maxLength={500}
           />
           <TouchableOpacity
-            style={styles.sendButton}
+            style={[
+              styles.sendButton,
+              (!newMessage.trim() || sending) && styles.sendButtonDisabled,
+            ]}
             onPress={handleSendMessage}
+            disabled={!newMessage.trim() || sending}
           >
-            <Ionicons name="send" size={20} color="#FFFFFF" />
+            {sending ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="send" size={20} color="#FFFFFF" />
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

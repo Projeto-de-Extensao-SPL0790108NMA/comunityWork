@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { supabase } from '../../services/supabase';
@@ -252,173 +252,166 @@ const AddServiceScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <Toast {...toastProps} />
+    <SafeAreaView style={styles.container}>
+      <Toast {...toastProps} />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Basic Information */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Informações Básicas</Text>
+          {/* Basic Information */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Informações Básicas</Text>
 
-              <Text style={styles.label}>
-                Título do Serviço <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                style={[styles.input, titleError ? styles.inputError : null]}
-                placeholder="Ex: Conserto de vazamentos"
-                value={title}
-                onChangeText={text => {
-                  setTitle(text);
-                  setTitleError('');
-                }}
-                maxLength={100}
-              />
-              {titleError ? (
-                <Text style={styles.errorText}>{titleError}</Text>
-              ) : null}
-              <Text style={styles.helperText}>
-                {title.length}/100 caracteres
-              </Text>
+            <Text style={styles.label}>
+              Título do Serviço <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, titleError ? styles.inputError : null]}
+              placeholder="Ex: Conserto de vazamentos"
+              value={title}
+              onChangeText={text => {
+                setTitle(text);
+                setTitleError('');
+              }}
+              maxLength={100}
+            />
+            {titleError ? (
+              <Text style={styles.errorText}>{titleError}</Text>
+            ) : null}
+            <Text style={styles.helperText}>{title.length}/100 caracteres</Text>
 
-              <Text style={styles.label}>
-                Categoria <Text style={styles.required}>*</Text>
-              </Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedCategory}
-                  onValueChange={itemValue =>
-                    setSelectedCategory(itemValue as number)
-                  }
-                >
-                  {categories.map(cat => (
-                    <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
-                  ))}
-                </Picker>
-              </View>
-
-              <Text style={styles.label}>Descrição</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Descreva o que você oferece..."
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                maxLength={500}
-              />
-              <Text style={styles.helperText}>
-                {description.length}/500 caracteres
-              </Text>
-            </View>
-
-            {/* Service Details */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Detalhes do Serviço</Text>
-
-              <Text style={styles.label}>Preço (R$)</Text>
-              <TextInput
-                style={[styles.input, priceError ? styles.inputError : null]}
-                placeholder="Ex: 50.00 (ou deixe em branco)"
-                value={price}
-                onChangeText={text => {
-                  setPrice(text);
-                  setPriceError('');
-                }}
-                keyboardType="numeric"
-              />
-              {priceError ? (
-                <Text style={styles.errorText}>{priceError}</Text>
-              ) : null}
-
-              <Text style={styles.label}>Disponibilidade</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Ex: Seg a Sex, 9h às 18h"
-                value={availability}
-                onChangeText={setAvailability}
-              />
-            </View>
-
-            {/* Images */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Fotos do Serviço (até 4)</Text>
-
-              <View style={styles.imagePreviewContainer}>
-                {selectedImages.map(image => (
-                  <View key={image.uri} style={styles.imageWrapper}>
-                    <Image
-                      source={{ uri: image.uri }}
-                      style={styles.imagePreview}
-                    />
-                    <TouchableOpacity
-                      onPress={() => removeImage(image.uri)}
-                      style={styles.imageRemoveButton}
-                    >
-                      <Ionicons name="close" size={16} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  </View>
+            <Text style={styles.label}>
+              Categoria <Text style={styles.required}>*</Text>
+            </Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedCategory}
+                onValueChange={itemValue =>
+                  setSelectedCategory(itemValue as number)
+                }
+              >
+                {categories.map(cat => (
+                  <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
                 ))}
-
-                {selectedImages.length < 4 && (
-                  <TouchableOpacity
-                    onPress={pickImage}
-                    style={styles.addPhotoButton}
-                  >
-                    <Ionicons
-                      name="add-circle-outline"
-                      size={40}
-                      color="#3B82F6"
-                    />
-                    <Text style={styles.addPhotoText}>Adicionar foto</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+              </Picker>
             </View>
 
-            {/* Progress Bar */}
-            {loading && uploadProgress > 0 && (
-              <View style={styles.progressContainer}>
-                <Text style={styles.progressText}>Enviando imagens...</Text>
-                <View style={styles.progressBar}>
-                  <View
-                    style={[
-                      styles.progressFill,
-                      { width: `${uploadProgress}%` },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.progressPercentage}>
-                  {Math.round(uploadProgress)}%
-                </Text>
-              </View>
-            )}
+            <Text style={styles.label}>Descrição</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Descreva o que você oferece..."
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              maxLength={500}
+            />
+            <Text style={styles.helperText}>
+              {description.length}/500 caracteres
+            </Text>
+          </View>
 
-            {/* Submit Button */}
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSaveService}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.buttonText}>Salvar Serviço</Text>
-                </>
+          {/* Service Details */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Detalhes do Serviço</Text>
+
+            <Text style={styles.label}>Preço (R$)</Text>
+            <TextInput
+              style={[styles.input, priceError ? styles.inputError : null]}
+              placeholder="Ex: 50.00 (ou deixe em branco)"
+              value={price}
+              onChangeText={text => {
+                setPrice(text);
+                setPriceError('');
+              }}
+              keyboardType="numeric"
+            />
+            {priceError ? (
+              <Text style={styles.errorText}>{priceError}</Text>
+            ) : null}
+
+            <Text style={styles.label}>Disponibilidade</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: Seg a Sex, 9h às 18h"
+              value={availability}
+              onChangeText={setAvailability}
+            />
+          </View>
+
+          {/* Images */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Fotos do Serviço (até 4)</Text>
+
+            <View style={styles.imagePreviewContainer}>
+              {selectedImages.map(image => (
+                <View key={image.uri} style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={styles.imagePreview}
+                  />
+                  <TouchableOpacity
+                    onPress={() => removeImage(image.uri)}
+                    style={styles.imageRemoveButton}
+                  >
+                    <Ionicons name="close" size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {selectedImages.length < 4 && (
+                <TouchableOpacity
+                  onPress={pickImage}
+                  style={styles.addPhotoButton}
+                >
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={40}
+                    color="#3B82F6"
+                  />
+                  <Text style={styles.addPhotoText}>Adicionar foto</Text>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </SafeAreaProvider>
+            </View>
+          </View>
+
+          {/* Progress Bar */}
+          {loading && uploadProgress > 0 && (
+            <View style={styles.progressContainer}>
+              <Text style={styles.progressText}>Enviando imagens...</Text>
+              <View style={styles.progressBar}>
+                <View
+                  style={[styles.progressFill, { width: `${uploadProgress}%` }]}
+                />
+              </View>
+              <Text style={styles.progressPercentage}>
+                {Math.round(uploadProgress)}%
+              </Text>
+            </View>
+          )}
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSaveService}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                <Text style={styles.buttonText}>Salvar Serviço</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
