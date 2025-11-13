@@ -1,81 +1,180 @@
-name: Verificação de Qualidade do Código
-on: [push, pull_request]
+name: CI/CD Pipeline - Verificação Completa
 
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main, develop, staging]
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   prettier:
-    name: Verificação de Formatação (Prettier)
+    name: Formatação (Prettier)
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Baixar o código do repositório
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar PNPM
+      - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: 3. Configurar ambiente Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: 4. Instalar dependências
+      - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
-      - name: 5. Rodar a verificação do Prettier
+      - name: Verificar formatação
         run: pnpm run lint:prettier:check
 
   eslint:
-    name: Verificação de Código (ESLint)
+    name: Linting (ESLint)
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Baixar o código do repositório
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar PNPM
+      - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: 3. Configurar ambiente Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: 4. Instalar dependências
+      - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
-      - name: 5. Rodar a verificação do ESLint
+      - name: Verificar código
         run: pnpm run lint
 
   commitlint:
-    name: Verificação de Commits (Commitlint)
+    name: Commits (Commitlint)
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - name: 1. Baixar o código do repositório
+      - name: Checkout código
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 2. Configurar PNPM
+      - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: 3. Configurar ambiente Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: 4. Instalar dependências
+      - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
-      - name: 5. Rodar a verificação do Commitlint
+      - name: Verificar mensagens de commit
         run: pnpm exec commitlint --last
+
+  tests:
+    name: Testes Unitários
+    runs-on: ubuntu-latest
+    needs: [prettier, eslint] # Só roda se qualidade passar
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Rodar testes com cobertura
+        run: pnpm run test:ci
+
+      - name: Upload cobertura para Codecov (opcional)
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  build:
+    name: Verificação de Build
+    runs-on: ubuntu-latest
+    needs: [prettier, eslint, tests] # Roda após todos passarem
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificar compilação TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build bem-sucedido
+        run: |
+          echo "Todos os checks passaram!"
+          echo "Código pronto para deploy"
+
+  report:
+    name: Relatório Final
+    runs-on: ubuntu-latest
+    needs: [prettier, eslint, commitlint, tests, build]
+    if: always() # Roda mesmo se algo falhar
+    steps:
+      - name: Status do Pipeline
+        run: |
+          echo "================================================"
+          echo "RELATÓRIO DO PIPELINE CI/CD"
+          echo "================================================"
+          echo "Prettier: ${{ needs.prettier.result }}"
+          echo "ESLint: ${{ needs.eslint.result }}"
+          echo "Commitlint: ${{ needs.commitlint.result }}"
+          echo "Testes: ${{ needs.tests.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          echo "================================================"
+
+      - name: Pipeline concluído
+        if: ${{ needs.prettier.result == 'success' && needs.eslint.result == 'success' && needs.tests.result == 'success' && needs.build.result == 'success' }}
+        run: |
+          echo "SUCESSO! Todos os checks passaram!"
+          echo "Código está pronto para produção"
+
+      - name: Pipeline falhou
+        if: ${{ needs.prettier.result == 'failure' || needs.eslint.result == 'failure' || needs.tests.result == 'failure' || needs.build.result == 'failure' }}
+        run: |
+          echo "FALHA! Verifique os jobs que falharam acima"
+          exit 1

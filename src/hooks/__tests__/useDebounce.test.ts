@@ -1,11 +1,4 @@
-/**
- * Testes simplificados para useDebounce
- */
-
 describe('useDebounce - Testes Simplificados', () => {
-  /**
-   * Mock manual do hook usando setTimeout
-   */
   const testDebounce = async (
     value: string,
     delay: number,
@@ -15,7 +8,6 @@ describe('useDebounce - Testes Simplificados', () => {
       const timer = setTimeout(() => {
         resolve(debounced);
       }, delay);
-
       return () => clearTimeout(timer);
     });
   };

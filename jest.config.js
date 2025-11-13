@@ -1,6 +1,3 @@
-/**
- * Configuração do Jest para React Native + Expo
- */
 module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 

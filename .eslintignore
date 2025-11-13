@@ -1,0 +1,29 @@
+# Dependências
+node_modules/
+
+# Build do Expo
+.expo/
+.expo-shared/
+dist/
+
+# Cobertura de testes (arquivos gerados)
+coverage/
+
+# Cache
+.cache/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Configurações locais
+.env
+
+# TypeScript
+*.tsbuildinfo

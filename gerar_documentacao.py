@@ -1,14 +1,11 @@
 import os
 import datetime
 
-# 🔧 Configurações do projeto
-NOME_PROJETO = "Bible"
+NOME_PROJETO = "LINKA: Plataforma de Serviços Comunitários"
 AUTOR = "Natanael Santos"
 ARQUIVO_SAIDA = "documentacao.md"
 
-# Extensões de código a incluir
 EXTENSOES = {
-    ".py": "python",
     ".js": "javascript",
     ".tsx": "typescript",
     ".ts": "typescript",
@@ -19,9 +16,10 @@ EXTENSOES = {
     ".cpp": "cpp",
     ".c": "c",
     ".dart": "dart",
+    "yml": "yaml",
+    "md": "markdown",
 }
 
-# Pastas a ignorar
 IGNORAR_PASTAS = [
     "node_modules",
     ".git",
@@ -61,20 +59,17 @@ def gerar_documentacao():
     data_atual = datetime.date.today().strftime("%d/%m/%Y")
 
     with open(ARQUIVO_SAIDA, "w", encoding="utf-8") as doc:
-        # 🧾 Capa
         doc.write(f"# 📘 {NOME_PROJETO}\n\n")
         doc.write(f"**Autor:** {AUTOR}  \n")
         doc.write(f"**Data:** {data_atual}\n\n")
         doc.write("---\n\n")
         doc.write("> Este documento contém a estrutura de pastas e todos os códigos do projeto, gerado automaticamente.\n\n")
 
-        # 🌳 Estrutura de diretórios
         doc.write("## 📂 Estrutura de Pastas\n\n")
         doc.write("```\n")
         doc.write(gerar_estrutura_pastas("."))
         doc.write("\n```\n\n")
 
-        # 💻 Códigos
         doc.write("## 💻 Códigos do Projeto\n\n")
 
         for raiz, dirs, arquivos in os.walk("."):
@@ -97,8 +92,8 @@ def gerar_documentacao():
 
                     doc.write("\n```\n\n")
 
-    print(f"✅ Arquivo '{ARQUIVO_SAIDA}' gerado com sucesso!")
-    print("👉 Agora abra o arquivo no VSCode e exporte com 'Markdown PDF → Export (pdf)'.")
+    print(f"Arquivo '{ARQUIVO_SAIDA}' gerado com sucesso!")
+    print("Agora abra o arquivo no VSCode e exporte com 'Markdown PDF → Export (pdf)'.")
 
 if __name__ == "__main__":
     gerar_documentacao()

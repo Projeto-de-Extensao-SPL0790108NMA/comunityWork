@@ -1,9 +1,3 @@
-/**
- * Setup do Jest
- * Este arquivo roda ANTES de todos os testes e configura o ambiente.
- */
-
-// Silencia warnings específicos que aparecem nos testes
 const originalError = console.error;
 const originalWarn = console.warn;
 
@@ -37,7 +31,6 @@ afterAll(() => {
   console.warn = originalWarn;
 });
 
-// Limpa mocks após cada teste
 afterEach(() => {
   jest.clearAllMocks();
 });

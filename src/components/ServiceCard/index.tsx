@@ -64,6 +64,7 @@ const ServiceCard: React.FC<Props> = ({ service }) => {
 
   return (
     <TouchableOpacity
+      testID="service-card"
       style={styles.card}
       activeOpacity={0.8}
       onPress={() =>

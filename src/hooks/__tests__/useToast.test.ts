@@ -1,11 +1,4 @@
-/**
- * Testes simplificados para useToast
- */
-
 describe('useToast - Testes Simplificados', () => {
-  /**
-   * Simula comportamento do hook useToast
-   */
   const mockToast = () => {
     let state = {
       visible: false,
