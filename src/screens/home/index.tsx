@@ -184,7 +184,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTextContainer}>
-            <Text style={styles.greeting}>Olá, {userName} 👋</Text>
+            <Text style={styles.greeting}>Olá, {userName}</Text>
             <Text style={styles.subtitle}>
               Encontre serviços na sua comunidade
             </Text>
