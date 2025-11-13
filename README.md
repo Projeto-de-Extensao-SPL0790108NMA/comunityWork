@@ -9,248 +9,175 @@
 </p>
 
 <p align="center">
-  <!-- Status do CI/CD -->
-  <a href="https://github.com/Projeto-de-Extensao-SPL0790108NMA/comunityWork/actions/workflows/ci.yml">
-    <img src="https://github.com/Projeto-de-Extensao-SPL0790108NMA/comunityWork/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI/CD Pipeline">
+  <a href="https://github.com/Natanael-SSilva/community-platform/actions/workflows/main.yml">
+    <img src="https://github.com/Natanael-SSilva/community-platform/actions/workflows/main.yml/badge.svg" alt="Status da Verificação de Código">
   </a>
-  
-  <!-- Cobertura de Código -->
-  <a href="https://codecov.io/gh/Projeto-de-Extensao-SPL0790108NMA/comunityWork">
-    <img src="https://codecov.io/gh/Projeto-de-Extensao-SPL0790108NMA/comunityWork/branch/main/graph/badge.svg" alt="Cobertura de Código">
-  </a>
-  
-  <!-- Status do Projeto -->
-  <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-orange?style=flat-square" alt="Status do Projeto">
-  
-  <!-- Tecnologias -->
-  <img src="https://img.shields.io/badge/Expo-SDK%2054-000020?style=flat-square&logo=expo" alt="Expo SDK 54">
-  <img src="https://img.shields.io/badge/React%20Native-0.81-61DAFB?style=flat-square&logo=react" alt="React Native">
-  <img src="https://img.shields.io/badge/TypeScript-5.6-3178C6?style=flat-square&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=flat-square&logo=supabase" alt="Supabase">
-  
-  <!-- Qualidade -->
-  <img src="https://img.shields.io/badge/Code%20Style-Prettier-ff69b4?style=flat-square&logo=prettier" alt="Prettier">
-  <img src="https://img.shields.io/badge/Linting-ESLint-4B32C3?style=flat-square&logo=eslint" alt="ESLint">
-  <img src="https://img.shields.io/badge/Commits-Conventional-fe5196?style=flat-square&logo=conventionalcommits" alt="Conventional Commits">
-  
-  <!-- Licença -->
-  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License MIT">
+  <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-orange" alt="Status do Projeto">
+  <img src="https://img.shields.io/badge/Expo-SDK%2054-000020?logo=expo" alt="Expo SDK 54">
+  <img src="https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react" alt="React Native">
+  <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase" alt="Supabase">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License MIT">
 </p>
 
-<p align="center">
-  <a href="#-sobre-o-projeto">Sobre</a> •
-  <a href="#-objetivos">Objetivos</a> •
-  <a href="#-stack-tecnológica">Stack</a> •
-  <a href="#-como-rodar-o-projeto">Como Rodar</a> •
-  <a href="#-qualidade-e-devops">DevOps</a> •
-  <a href="#-roadmap-do-mvp">Roadmap</a> •
-  <a href="#-contribuição">Contribuir</a>
-</p>
+> **Nota:** Este é um projeto acadêmico em desenvolvimento para as disciplinas de DevOps, Extensão, Fábrica de Software e Tópicos Avançados em Ciência da Computação na UNINORTE.
 
 ---
 
-> **🎓 Projeto Acadêmico**  
-> Trabalho integrado das disciplinas de **DevOps**, **Extensão**, **Fábrica de Software** e **Tópicos Avançados em Ciência da Computação** - 8º período de Ciência da Computação na UNINORTE.
+## 📑 Índice
 
----
+- [📋 Sobre o Projeto](#sobre-o-projeto)
+- [🎯 Objetivos](#objetivos)
+- [🚀 Stack Tecnológica](#stack-tecnológica)
+- [🗓️ Roadmap do MVP](#roadmap-do-mvp)
+- [🔧 Como Rodar o Projeto](#como-rodar-o-projeto)
+- [📋 Padrões e "Clean Code"](#padrões-e-clean-code)
+- [🤝 Contribuição](#contribuição)
+- [📄 Licença](#licença)
+- [👨‍💻 Autor](#autor)
+
+<a id="sobre-o-projeto"></a>
 
 ## 📋 Sobre o Projeto
 
-O **LINKA** é uma aplicação móvel que visa conectar prestadores de serviços locais (autônomos e microempreendedores) a moradores da mesma comunidade. O projeto funciona como um **marketplace hiperlocal**, promovendo a inclusão digital de trabalhadores informais e fortalecendo a economia local através da confiança e da colaboração entre vizinhos.
+O **LINKA** é uma aplicação móvel que visa conectar prestadores de serviços locais (autônomos e microempreendedores) a moradores da mesma comunidade. O projeto funciona como um marketplace hiperlocal, promovendo a inclusão digital de trabalhadores informais e fortalecendo a economia local através da confiança e da colaboração entre vizinhos.
 
-### 🌟 Diferenciais
+Este projeto é um trabalho prático que integra os conhecimentos de múltiplas disciplinas do 8º período de Ciência da Computação.
 
-- ✅ **Hiperlocal**: Foco em serviços da sua comunidade
-- ✅ **Inclusão Digital**: Plataforma acessível para trabalhadores informais
-- ✅ **Chat em Tempo Real**: Comunicação direta entre cliente e prestador
-- ✅ **Sistema de Avaliações**: Construção de confiança através de feedback
-- ✅ **Economia Circular**: Fortalecimento da economia local
-
----
+<a id="objetivos"></a>
 
 ## 🎯 Objetivos
 
-- **Conectar** a oferta e a demanda de serviços em uma escala hiperlocal
-- **Promover Inclusão Digital** para trabalhadores que atuam fora das grandes plataformas
-- **Construir um Ecossistema de Confiança** através de um sistema de avaliações e chat direto
-- **Estimular a Economia Local**, incentivando que o capital circule dentro da própria comunidade
+- **Conectar** a oferta e a demanda de serviços em uma escala hiperlocal.
+- **Promover Inclusão Digital** para trabalhadores que atuam fora das grandes plataformas.
+- **Construir um Ecossistema de Confiança** através de um sistema de avaliações e chat direto.
+- **Estimular a Economia Local**, incentivando que o capital circule dentro da própria comunidade.
 
----
+<a id="stack-tecnológica"></a>
 
 ## 🚀 Stack Tecnológica
 
-### **Frontend**
+A arquitetura do projeto foi definida com foco em agilidade, escalabilidade e nas melhores práticas do desenvolvimento moderno.
 
-- **React Native** com **Expo** - Desenvolvimento multiplataforma (Android/iOS)
-- **TypeScript** - Segurança de tipos e manutenibilidade
-- **React Navigation** - Gerenciamento de rotas e navegação
+- **Frontend:**
+  - **React Native com Expo:** Para o desenvolvimento de um aplicativo móvel multiplataforma (Android/iOS).
+  - **TypeScript:** Para garantir a segurança de tipos e a manutenibilidade do código.
+  - **React Navigation:** Para o gerenciamento de todas as rotas e fluxos de navegação.
+- **Backend (BaaS - Backend-as-a-Service):**
+  - **Supabase:** Utilizado como nossa espinha dorsal, provendo:
+    - **Autenticação:** Gerenciamento completo de usuários, senhas e sessões (JWT).
+    - **Banco de Dados:** PostgreSQL para todos os dados da aplicação.
+    - **Storage:** Armazenamento de arquivos para fotos de perfil e de serviços.
+    - **Realtime:** Funcionalidade de WebSocket para o nosso sistema de chat.
+    - **Funções (RPC):** Para lógicas de negócio customizadas no banco de dados.
+- **Qualidade de Código e Automação (DevOps):**
+  - **ESLint + Prettier:** Para garantir um padrão de código consistente e livre de erros.
+  - **Husky + lint-staged + commitlint:** Para automatizar a verificação de qualidade e o padrão de commits antes que o código seja enviado ao repositório.
+  - **GitHub Actions:** Para Integração Contínua (CI), rodando as verificações de qualidade em cada `push` e `pull request`.
 
-### **Backend (BaaS)**
+<a id="roadmap-do-mvp"></a>
 
-- **Supabase** - Backend-as-a-Service completo
-  - 🔐 **Autenticação**: JWT, OTP, recuperação de senha
-  - 💾 **PostgreSQL**: Banco de dados relacional
-  - 📁 **Storage**: Upload de imagens
-  - ⚡ **Realtime**: WebSocket para chat
-  - 🔧 **RPC**: Funções customizadas
+## 🗓️ Roadmap do MVP
 
-### **Qualidade & DevOps**
+O escopo do nosso Produto Mínimo Viável (MVP) foi concluído, validando o ciclo de valor completo da plataforma.
 
-- **ESLint + Prettier** - Padronização de código
-- **Husky + lint-staged** - Pre-commit hooks
-- **Commitlint** - Conventional Commits
-- **Jest** - Testes unitários (40%+ de cobertura)
-- **GitHub Actions** - CI/CD Pipeline automatizado
+#### ✅ **Fase 1: Fundação e Autenticação (Concluída)**
 
----
+- Setup do projeto com Expo, TypeScript e PNPM.
+- Configuração do Supabase (Banco de Dados, Auth, Storage).
+- Fluxo completo de autenticação: Cadastro, Login, Confirmação por OTP, Recuperação de Senha.
+- Onboarding e Gerenciamento de Perfil (CRUD com foto e localização).
+
+#### ✅ **Fase 2: Funcionalidades do Marketplace (Concluída)**
+
+- Cadastro de Serviços com múltiplas fotos e categorias.
+- Tela de Busca com busca por texto (debounce) e filtro de categorias.
+- Tela de Detalhes do Serviço com carrossel de imagens e informações do prestador.
+
+#### ✅ **Fase 3: Interação e Confiança (Concluída)**
+
+- Sistema de Chat em Tempo Real entre cliente e prestador.
+- Sistema de Avaliações (1-5 estrelas e comentários).
+
+#### 🔲 **Fase 4: Próximos Passos (Planejado)**
+
+- Painel para o prestador gerenciar seus próprios serviços (editar/excluir).
+- Busca por geolocalização.
+- Notificações Push para novas mensagens e avaliações.
+
+<a id="como-rodar-o-projeto"></a>
 
 ## 🔧 Como Rodar o Projeto
 
 ### Pré-requisitos
 
-\`\`\`bash
-
-# Verificar versões
-
-node --version # v20+
-pnpm --version # 8+
-\`\`\`
+- Node.js (v20+)
+- **pnpm** (gerenciador de pacotes - `npm install -g pnpm`)
+- Conta no **Supabase** (necessário para as variáveis de ambiente)
 
 ### Instalação
 
-\`\`\`bash
+1.  **Clone o repositório**
 
-# 1. Clone o repositório
+    ```bash
+    git clone [https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git](https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git)
+    cd SEU-REPOSITORIO
+    ```
 
-git clone https://github.com/Projeto-de-Extensao-SPL0790108NMA/comunityWork.git
-cd comunityWork
+2.  **Instale as dependências**
 
-# 2. Instale as dependências
+    ```bash
+    pnpm install
+    ```
 
-pnpm install
+3.  **Configure as variáveis de ambiente**
+    - Crie um arquivo `.env` na raiz do projeto.
+    - Adicione suas chaves do Supabase (encontradas em _Project Settings > API_):
+      ```env
+      EXPO_PUBLIC_SUPABASE_URL=SUA_URL_DO_SUPABASE
+      EXPO_PUBLIC_SUPABASE_ANON_KEY=SUA_CHAVE_ANON_DO_SUPABASE
+      ```
 
-# 3. Configure as variáveis de ambiente
+4.  **Inicie o servidor de desenvolvimento**
 
-cp .env.example .env
+    ```bash
+    pnpm start
+    ```
 
-# Edite o .env com suas credenciais do Supabase
+    - Escaneie o QR Code com o aplicativo **Expo Go** no seu celular.
 
-# 4. Inicie o servidor de desenvolvimento
+<a id="padrões-e-clean-code"></a>
 
-pnpm start
-\`\`\`
+## 📋 Padrões e "Clean Code"
 
-### Comandos Disponíveis
+Este projeto foi desenvolvido com um forte compromisso com a qualidade e as boas práticas da Engenharia de Software.
 
-\`\`\`bash
+- **Documentação:** Todos os componentes e funções complexas são documentados com JSDoc.
+- **"Clean Code":** Aplicamos princípios como _Single Responsibility_ (componentes focados em uma única tarefa) e _DRY_ (centralização de tipos e lógica reutilizável em hooks).
+- **Conventional Commits:** Todas as mensagens de commit seguem o padrão `tipo(escopo): descrição` para um histórico claro e legível.
+- **Automação de Qualidade:** Com Husky, ESLint e Prettier, garantimos que todo código que entra no repositório é verificado e formatado automaticamente.
 
-# Desenvolvimento
+<a id="contribuição"></a>
 
-pnpm start # Inicia o Expo Dev Server
-pnpm android # Roda no emulador Android
-pnpm ios # Roda no simulador iOS
+## 🤝 Contribuição
 
-# Qualidade de Código
+Este é um projeto acadêmico, mas sugestões e melhorias são sempre bem-vindas. Para contribuir:
 
-pnpm lint # Verifica código com ESLint
-pnpm lint:prettier:check # Verifica formatação
+1.  Faça um **Fork** do projeto.
+2.  Crie uma nova **Branch** (`feature/NovaFuncionalidade`).
+3.  Faça o **Commit** das suas alterações seguindo o padrão Conventional Commits.
+4.  Abra um **Pull Request**.
 
-# Testes
-
-pnpm test # Roda testes unitários
-pnpm test:watch # Modo watch para desenvolvimento
-pnpm test:coverage # Gera relatório de cobertura
-\`\`\`
-
----
-
-## 🏗️ Qualidade e DevOps
-
-### Pipeline CI/CD
-
-O projeto possui um **pipeline automatizado** no GitHub Actions que:
-
-1. ✅ **Prettier** - Verifica formatação do código
-2. ✅ **ESLint** - Analisa qualidade e padrões
-3. ✅ **Commitlint** - Valida mensagens de commit
-4. ✅ **Testes Unitários** - Executa suite de testes com cobertura
-5. ✅ **Build Check** - Verifica compilação TypeScript
-
-### Métricas de Qualidade
-
-| Métrica                 | Valor             | Status |
-| ----------------------- | ----------------- | ------ |
-| **Cobertura de Código** | 40%+              | ✅     |
-| **Testes Unitários**    | 11+ testes        | ✅     |
-| **Padrão de Commits**   | Conventional      | ✅     |
-| **Code Style**          | Prettier + ESLint | ✅     |
-| **Type Safety**         | TypeScript Strict | ✅     |
-
-### Conventional Commits
-
-Seguimos o padrão de commits semânticos:
-
-\`\`\`bash
-feat(auth): add OTP verification
-fix(chat): resolve message duplication
-docs(readme): update installation steps
-test(hooks): add useDebounce unit tests
-ci(actions): implement complete pipeline
-\`\`\`
-
-**Tipos:** \`feat\`, \`fix\`, \`docs\`, \`style\`, \`refactor\`, \`test\`, \`chore\`, \`ci\`
-
----
-
-## 🗓️ Roadmap do MVP
-
-### ✅ **Fase 1: Fundação e Autenticação** (Concluída)
-
-- [x] Setup do projeto (Expo, TypeScript, PNPM)
-- [x] Configuração Supabase (DB, Auth, Storage)
-- [x] Fluxo de autenticação completo
-- [x] Onboarding e perfil de usuário
-
-### ✅ **Fase 2: Marketplace** (Concluída)
-
-- [x] CRUD de serviços com múltiplas fotos
-- [x] Tela de busca com debounce
-- [x] Filtros por categoria
-
-### ✅ **Fase 3: Interação e Confiança** (Concluída)
-
-- [x] Sistema de chat em tempo real
-- [x] Sistema de avaliações
-
-### ✅ **Fase 4: Qualidade e DevOps** (Concluída)
-
-- [x] Testes unitários (40%+ cobertura)
-- [x] Pipeline CI/CD automatizado
-- [x] Conventional Commits
-
-### 🔲 **Fase 5: Próximos Passos** (Planejado)
-
-- [ ] Painel do prestador
-- [ ] Busca por geolocalização
-- [ ] Notificações push
-
----
+<a id="licença"></a>
 
 ## 📄 Licença
 
 Este projeto está licenciado sob a **Licença MIT**.
 
----
+<a id="autor"></a>
 
 ## 👨‍💻 Autor
 
 | [<img src="https://avatars.githubusercontent.com/u/173159590?v=4" width=115><br><sub>Natanael Santos da Silva</sub>](https://github.com/Natanael-SSilva) |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------: |
 
-Projeto desenvolvido como parte do currículo do curso de Ciência da Computação - UNINORTE.
-
----
-
-<p align="center">
-  Desenvolvido com ❤️ por <a href="https://github.com/Natanael-SSilva">Natanael Santos</a>
-</p>
+Projeto desenvolvido como parte do currículo do curso de Ciência da Computação.
